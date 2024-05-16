@@ -86,8 +86,8 @@ const CoinPage = () => {
     <div className={classes.container}>
       <div className={classes.sidebar}>
         <img
-          // src={coin?.image.large}
-          src={coin?.image}
+          src={coin?.image.large}
+          // src={coin?.image}
           alt={coin?.name}
           height="200"
           style={{ marginBottom: 20 }}
