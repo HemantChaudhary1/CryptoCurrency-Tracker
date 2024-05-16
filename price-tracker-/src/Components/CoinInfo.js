@@ -1,9 +1,10 @@
-
-
 import axios from "axios";
 import { useEffect, useState } from "react";
 import { HistoricalChart } from "../config/api";
 import { Line } from "react-chartjs-2";
+import { Chart, registerables } from "chart.js";
+import "chartjs-adapter-date-fns";
+
 import {
   CircularProgress,
   createTheme,
@@ -13,12 +14,12 @@ import {
 import SelectButton from "./SelectButton";
 import { chartDays } from "../config/data";
 import { CryptoState } from "../CryptoContext";
-
+Chart.register(...registerables);
 const CoinInfo = ({ coin }) => {
   const [historicData, setHistoricData] = useState();
   const [days, setDays] = useState(1);
   const { currency } = CryptoState();
-  const [flag,setflag] = useState(false);
+  const [flag, setflag] = useState(false);
 
   const useStyles = makeStyles((theme) => ({
     container: {
@@ -65,7 +66,7 @@ const CoinInfo = ({ coin }) => {
   return (
     <ThemeProvider theme={darkTheme}>
       <div className={classes.container}>
-        {!historicData | flag===false ? (
+        {!historicData | (flag === false) ? (
           <CircularProgress
             style={{ color: "gold" }}
             size={250}
@@ -75,15 +76,7 @@ const CoinInfo = ({ coin }) => {
           <>
             <Line
               data={{
-                labels: historicData.map((coin) => {
-                  let date = new Date(coin[0]);
-                  let time =
-                    date.getHours() > 12
-                      ? `${date.getHours() - 12}:${date.getMinutes()} PM`
-                      : `${date.getHours()}:${date.getMinutes()} AM`;
-                  return days === 1 ? time : date.toLocaleDateString();
-                }),
-
+                labels: historicData.map((coin) => new Date(coin[0])), // Use Date objects for labels
                 datasets: [
                   {
                     data: historicData.map((coin) => coin[1]),
@@ -93,6 +86,17 @@ const CoinInfo = ({ coin }) => {
                 ],
               }}
               options={{
+                scales: {
+                  x: {
+                    type: "time", // Set x-axis scale type to 'time'
+                    time: {
+                      unit: "day", // Display data by day
+                      displayFormats: {
+                        day: "MMM d", // Format for daily data
+                      },
+                    },
+                  },
+                },
                 elements: {
                   point: {
                     radius: 1,
@@ -100,6 +104,7 @@ const CoinInfo = ({ coin }) => {
                 },
               }}
             />
+
             <div
               style={{
                 display: "flex",
@@ -111,7 +116,8 @@ const CoinInfo = ({ coin }) => {
               {chartDays.map((day) => (
                 <SelectButton
                   key={day.value}
-                  onClick={() => {setDays(day.value);
+                  onClick={() => {
+                    setDays(day.value);
                     setflag(false);
                   }}
                   selected={day.value === days}
